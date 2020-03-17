@@ -6,6 +6,8 @@ import asyncio
 import webbrowser
 import re
 
+index = 0
+
 fieldnames = ['url', 'title', 'tagline', 'raw_desc', 'description', 'media', 'links', 'submitted', 'authors', 'win']
 out = open('data.csv', 'w+')
 
@@ -47,6 +49,10 @@ def parse(text, url):
     }
 
 async def scrape(url):
+    global index 
+    i = index
+    index += 1
+    print('Now scraping: ' + str(i))
     loop = asyncio.get_event_loop()
     res = await loop.run_in_executor(None, requests.get, url.strip())
     res = res.text 
