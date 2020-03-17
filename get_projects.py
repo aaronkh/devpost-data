@@ -16,10 +16,11 @@ csvwriter.writeheader()
 # csvwriter.writerow({'url': 'test', 'title': 'many com, mas, a,'...})
 data = open('urls.txt')
 
-def parse(text, url):
+def parse(text, url, i):
+    print('Parsing: #', str(i), url)
     soup = BeautifulSoup(text, features='lxml')
     title = re.search(r'<title>(.*) \| Devpost</title>', str(soup.select_one('title')))[1]
-    tagline = re.search(title + ' - (.*)" ', str(soup.select_one('meta[name="description"]')))
+    tagline = re.search(re.escape(title) + ' - (.*)" ', str(soup.select_one('meta[name="description"]')))
     if tagline:
         tagline = tagline[1]
     raw_desc = soup.select_one('#app-details-left').findAll('div', attrs={'id': None, 'class': None})[0]
@@ -60,7 +61,7 @@ async def scrape(url):
     loop = asyncio.get_event_loop()
     res = await loop.run_in_executor(None, requests.get, url.strip())
     res = res.text 
-    parsed = parse(res, url)
+    parsed = parse(res, url, i)
     csvwriter.writerow(parsed)
 
 async def main():
