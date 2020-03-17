@@ -14,27 +14,31 @@ out = open('data.csv', 'w+')
 csvwriter = csv.DictWriter(out, fieldnames)
 csvwriter.writeheader()
 # csvwriter.writerow({'url': 'test', 'title': 'many com, mas, a,'...})
-data = open('tests.txt')
+data = open('urls.txt')
 
 def parse(text, url):
     soup = BeautifulSoup(text, features='lxml')
     title = re.search(r'<title>(.*) \| Devpost</title>', str(soup.select_one('title')))[1]
-    tagline = re.search(title + ' - (.*)" ', str(soup.select_one('meta[name="description"]')))[1]
+    tagline = re.search(title + ' - (.*)" ', str(soup.select_one('meta[name="description"]')))
+    if tagline:
+        tagline = tagline[1]
     raw_desc = soup.select_one('#app-details-left').findAll('div', attrs={'id': None, 'class': None})[0]
     description = ' '.join(raw_desc.strings)
     authors = [re.search('https://devpost.com/(.*)', member['href'])[1] for member in soup.select('li.software-team-member figure a')]
     # Nullable fields
-    links = [link['href'] for link in soup.select('ul[data-role="software-urls"] a')]
-    media = [link['href'] for link in soup.select('#gallery a')]
-    media += [frame['src'] for frame in soup.select('#gallery iframe')] # video embeds
-    submitted = [hackathon['href'] for hackathon in soup.select('.software-list-content a')]
+    links = [link['href'] for link in soup.select('ul[data-role="software-urls"] a') if 'href' in link]
+    media = [link['href'] for link in soup.select('#gallery a') if 'href' in link]
+    media += [frame['src'] for frame in soup.select('#gallery iframe') if 'src' in frame] # video embeds
+    submitted = [hackathon['href'] for hackathon in soup.select('.software-list-content a') if 'href' in hackathon]
     submissions = soup.select('.software-list-content')
     win = {}
     for submission in submissions:
-        name = submission.select_one('a')['href']
-        wins_lst = submission.select('li')
-        wins_lst = [''.join(i.strings).replace('\n', '').replace('Winner', '', 1).strip() for i in wins_lst]
-        win[name] = wins_lst
+        name = submission.select_one('a')
+        if 'href' in name: 
+            name = name['href']
+            wins_lst = submission.select('li')
+            wins_lst = [''.join(i.strings).replace('\n', '').replace('Winner', '', 1).strip() for i in wins_lst]
+            win[name] = wins_lst
     return {
         'url': url,
         'title': title,
