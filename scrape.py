@@ -7,8 +7,10 @@ soup = BeautifulSoup(requests.get('https://devpost.com/software/newest').text, f
 last = soup.select_one('ul.pagination')
 last = int(last.findChildren('li', recursive=False)[-2].find('a').text)
 print('Indexing until page ' + str(last))
+print('-' * 10)
 with open('urls.txt', 'a+') as f:
     while i <= last:
+        print('Now scraping project page: ' + str(i))
         soup = BeautifulSoup(
             requests.get(
                 'https://devpost.com/software/newest?page=' + str(i)).text, 
