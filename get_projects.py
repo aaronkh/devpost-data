@@ -100,11 +100,12 @@ async def main():
     )
     parser.add_argument("file", help="Input a file name", default="urls.txt", nargs="?")
     args = parser.parse_args()
-    start = args.indices[0]
 
     try:
-        end = args.indices[1]
+        start = int(args.indices[0])
+        end = int(args.indices[1])
     except Exception:
+        start = 0
         end = -1
 
     name = args.file
@@ -113,7 +114,7 @@ async def main():
         if end < 0:
             coroutines = [scrape(line) for line in data]
         else: 
-            coroutines = [scrape(next(data)) for _ in range(end)] 
+            coroutines = [scrape(next(data)) for _ in range(start, end)] 
         await asyncio.gather(*coroutines)
 
 
