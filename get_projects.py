@@ -3,7 +3,6 @@ import csv
 from bs4 import BeautifulSoup
 from time import sleep
 import asyncio
-import webbrowser
 import re
 import argparse
 
@@ -111,13 +110,10 @@ async def main():
     name = args.file
 
     with open(name) as data:
-        lines = data.readlines()
-
-        end = len(lines) if end < 0 else end
-
-        coroutines = [
-            scrape(line) for i, line in enumerate(lines) if i >= start and i < end
-        ]
+        if end < 0:
+            coroutines = [scrape(line) for line in data]
+        else: 
+            coroutines = [scrape(next(data)) for _ in range(end)] 
         await asyncio.gather(*coroutines)
 
 
