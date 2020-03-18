@@ -111,10 +111,12 @@ async def main():
     name = args.file
 
     with open(name) as data:
+        for _ in range(start):
+                next(data)
         if end < 0:
             coroutines = [scrape(line) for line in data]
         else: 
-            coroutines = [scrape(next(data)) for _ in range(start, end)] 
+            coroutines = [scrape(next(data)) for _ in range(end)] 
         await asyncio.gather(*coroutines)
 
 
