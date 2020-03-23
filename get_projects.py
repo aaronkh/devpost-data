@@ -13,19 +13,19 @@ def parse(text, url, i):
     try:
         title = re.search(
             r"<title>(.*) \| Devpost</title>", str(soup.select_one("title"))
-        )[1]
+        ).group(1)
         tagline = re.search(
             re.escape(title) + ' - (.*)" ',
             str(soup.select_one('meta[name="description"]')),
         )
         if tagline:
-            tagline = tagline[1]
+            tagline = tagline.group(1)
         raw_desc = soup.select_one("#app-details-left").findAll(
             "div", attrs={"id": None, "class": None}
         )[0]
         description = " ".join(raw_desc.strings)
         authors = [
-            re.search("https://devpost.com/(.*)", member["href"])[1]
+            re.search("https://devpost.com/(.*)", member["href"]).group(1)
             for member in soup.select("li.software-team-member figure a")
         ]
         # Nullable fields
