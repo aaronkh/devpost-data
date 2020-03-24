@@ -6,9 +6,8 @@ import asyncio
 import re
 import argparse
 
-
 def parse(text, url, i):
-    print("Parsing: #", str(i), url)
+    print(f"Parsing {str(i)}:", url)
     soup = BeautifulSoup(text, features="lxml")
     try:
         title = re.search(
@@ -31,33 +30,30 @@ def parse(text, url, i):
         # Nullable fields
         links = [
             link["href"]
-            for link in soup.select('ul[data-role="software-urls"] a')
-            if "href" in link
+            for link in soup.select('ul[data-role="software-urls"] a', href=True)
         ]
-        media = [link["href"] for link in soup.select("#gallery a") if "href" in link]
+        media = [link["href"] for link in soup.select("#gallery a", href=True)]
         media += [
-            frame["src"] for frame in soup.select("#gallery iframe") if "src" in frame
+            frame["src"] for frame in soup.select("#gallery iframe", src=True)
         ]  # video embeds
         submitted = [
             hackathon["href"]
-            for hackathon in soup.select(".software-list-content a")
-            if "href" in hackathon
+            for hackathon in soup.select(".software-list-content a", href=True)
         ]
         submissions = soup.select(".software-list-content")
         win = {}
         for submission in submissions:
-            name = submission.select_one("a")
-            if "href" in name:
-                name = name["href"]
-                wins_lst = submission.select("li")
-                wins_lst = [
-                    "".join(i.strings)
-                    .replace("\n", "")
-                    .replace("Winner", "", 1)
-                    .strip()
-                    for i in wins_lst
-                ]
-                win[name] = wins_lst
+            name = submission.select_one("a", href=True)
+            name = name["href"]
+            wins_lst = submission.select("li")
+            wins_lst = [
+                "".join(i.strings)
+                .replace("\n", "")
+                .replace("Winner", "", 1)
+                .strip()
+                for i in wins_lst
+            ]
+            win[name] = wins_lst
         return {
             "url": url,
             "title": title,
@@ -79,9 +75,10 @@ async def scrape(url):
     global index
     i = index
     index += 1
-    print("Now scraping: " + str(i))
+    url = url.strip()
+    print(f"Scraping {str(i)}:", url)
     loop = asyncio.get_event_loop()
-    res = await loop.run_in_executor(None, requests.get, url.strip())
+    res = await loop.run_in_executor(None, requests.get, url)
     res = res.text
     parsed = parse(res, url, i)
     if parsed:
